@@ -1,12 +1,10 @@
-
 import express from 'express';
 import { env } from './config';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { neon } from '@neondatabase/serverless';
 import session from 'express-session';
-import connectPgSimple from 'connect-pg-simple';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { connectToMongoDB } from './db';
+import MongoStore from 'connect-mongo';
 
 // Get directory name in ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,49 +12,41 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Create Express app
 const app = express();
 
-// Setup database connection
-const sql = neon(env.DATABASE_URL);
-const db = drizzle(sql);
+// Initialize database connection
+connectToMongoDB();
 
-// Session setup
-const PgSession = connectPgSimple(session);
+// Setup session
 app.use(
   session({
-    store: new PgSession({
-      conString: env.DATABASE_URL,
-      tableName: 'sessions',
-      createTableIfMissing: true,
-    }),
     secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: env.MONGODB_URI,
+      collectionName: 'sessions',
+      ttl: 14 * 24 * 60 * 60, // 14 days
+    }),
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
       secure: env.NODE_ENV === 'production',
       httpOnly: true,
+      sameSite: 'lax',
     },
   })
 );
 
-// Parse JSON bodies
+// Body parser middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API routes
-app.use('/api', (req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', environment: env.NODE_ENV });
 });
 
-// In production, serve the static files from the dist directory
+// Serve static files
 if (env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
-  
-  // Handle client-side routing
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
   });
@@ -94,10 +84,8 @@ if (env.NODE_ENV === 'production') {
   });
 }
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-
-export { app, db };
