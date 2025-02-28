@@ -8,7 +8,7 @@ dotenv.config();
 // Define schema for environment variables to ensure type safety
 const envSchema = z.object({
   // Database
-  DATABASE_URL: z.string().url().default("postgresql://postgres:postgres@localhost:5432/postgres"),
+  DATABASE_URL: z.string().default("postgresql://postgres:postgres@localhost:5432/postgres"),
   
   // Authentication
   SESSION_SECRET: z.string().default("default-dev-session-secret-not-for-production"),
