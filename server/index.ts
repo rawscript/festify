@@ -39,10 +39,16 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Import routes
+import authRoutes from './routes/auth';
+
 // API routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', environment: env.NODE_ENV });
 });
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 // Serve static files
 if (env.NODE_ENV === 'production') {
