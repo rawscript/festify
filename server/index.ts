@@ -60,6 +60,38 @@ if (env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
   });
+} else {
+  // In development mode, provide a basic response for the root route
+  app.get('/', (req, res) => {
+    res.send(`
+      <html>
+        <head>
+          <title>Festify - Development Mode</title>
+          <style>
+            body { font-family: system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; }
+            h1 { color: hsl(258, 90%, 66%); }
+            .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+            code { background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.9rem; }
+          </style>
+        </head>
+        <body>
+          <h1>Festify Development Server</h1>
+          <p>The server is running in development mode. Here are some available endpoints:</p>
+          
+          <div class="card">
+            <h3>API Endpoints</h3>
+            <p><code>GET /api/health</code> - Check server status</p>
+          </div>
+          
+          <div class="card">
+            <h3>Development Tips</h3>
+            <p>To build the frontend, run: <code>npm run build</code></p>
+            <p>Your API requests should go to <code>/api/...</code> endpoints</p>
+          </div>
+        </body>
+      </html>
+    `);
+  });
 }
 
 // Start the server
