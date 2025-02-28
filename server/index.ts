@@ -39,8 +39,13 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Import routes
+// Import routes and middleware
 import authRoutes from './routes/auth';
+import profileRoutes from './routes/profile';
+import { attachUser } from './middleware/auth';
+
+// Apply global middleware
+app.use(attachUser);
 
 // API routes
 app.get('/api/health', (req, res) => {
@@ -49,6 +54,18 @@ app.get('/api/health', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+
+// Profile routes (protected)
+app.use('/api/profile', profileRoutes);
+
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Error handler
+import { errorHandler } from './middleware/errorHandler';
+app.use(errorHandler);
 
 // Serve static files
 if (env.NODE_ENV === 'production') {
