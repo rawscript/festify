@@ -20,3 +20,31 @@ export class AppError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+import { Request, Response, NextFunction } from 'express';
+
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  
+  // Default error message
+  let statusCode = 500;
+  let message = 'Internal Server Error';
+  
+  // Handle specific error types
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = err.message;
+  } else if (err.name === 'UnauthorizedError') {
+    statusCode = 401;
+    message = 'Unauthorized access';
+  } else if (err.code === 11000) { // MongoDB duplicate key error
+    statusCode = 409;
+    message = 'A resource with that identifier already exists';
+  }
+  
+  res.status(statusCode).json({
+    error: {
+      message,
+      statusCode
+    }
+  });
+};

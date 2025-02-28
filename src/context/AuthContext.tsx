@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
@@ -15,6 +14,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, confirmPassword: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  updateProfile?: (updatedUser: { id: string; email: string; name?: string }) => Promise<void>; // Added updateProfile
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       const response = await fetch('/api/auth/me');
       const data = await response.json();
-      
+
       if (data.isAuthenticated) {
         setUser(data.user);
         setIsAuthenticated(true);
@@ -70,13 +70,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
       body: JSON.stringify({ email, password }),
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'Login failed');
     }
-    
+
     setUser(data.user);
     setIsAuthenticated(true);
   };
@@ -89,13 +89,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
       body: JSON.stringify({ name, email, password, confirmPassword }),
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'Registration failed');
     }
-    
+
     setUser(data.user);
     setIsAuthenticated(true);
   };
@@ -105,12 +105,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || 'Logout failed');
       }
-      
+
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
@@ -118,6 +118,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     }
   };
+
+  const updateProfile = async (updatedUser: { id: string; email: string; name?: string }) => { // Added async and fetch
+    try {
+      const response = await fetch('/api/auth/updateProfile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedUser),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Profile update failed");
+      }
+      const data = await response.json();
+      setUser(data.user);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
+
 
   const value = {
     user,
@@ -127,6 +149,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     checkAuth,
+    updateProfile, // Added updateProfile to context
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

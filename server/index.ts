@@ -42,6 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 // Import routes and middleware
 import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
+import preferencesRoutes from './routes/preferences';
 import { attachUser } from './middleware/auth';
 
 // Apply global middleware
@@ -57,6 +58,9 @@ app.use('/api/auth', authRoutes);
 
 // Profile routes (protected)
 app.use('/api/profile', profileRoutes);
+
+app.use('/api/preferences', preferencesRoutes);
+
 
 // 404 handler
 app.use((req, res, next) => {
@@ -90,12 +94,12 @@ if (env.NODE_ENV === 'production') {
         <body>
           <h1>Festify Development Server</h1>
           <p>The server is running in development mode. Here are some available endpoints:</p>
-          
+
           <div class="card">
             <h3>API Endpoints</h3>
             <p><code>GET /api/health</code> - Check server status</p>
           </div>
-          
+
           <div class="card">
             <h3>Development Tips</h3>
             <p>To build the frontend, run: <code>npm run build</code></p>

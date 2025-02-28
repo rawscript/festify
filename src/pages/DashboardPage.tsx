@@ -1,43 +1,45 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import ProfileSettings from '../components/settings/ProfileSettings';
+import SecuritySettings from '../components/settings/SecuritySettings';
+import PreferenceSettings from '../components/settings/PreferenceSettings';
+import DashboardOverview from '../components/dashboard/DashboardOverview';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
-        <div className="border-4 border-dashed border-gray-200 rounded-lg p-4 min-h-[70vh]">
-          <h1 className="text-2xl font-semibold text-gray-900">Welcome, {user?.name || 'User'}!</h1>
-          <p className="mt-4 text-gray-600">
-            You are now logged in to your account. This is your dashboard.
-          </p>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">Welcome, {user?.name || 'User'}!</h1>
+        
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-4 mb-8">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          </TabsList>
           
-          <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Account Information
-              </h3>
-            </div>
-            <div className="border-t border-gray-200">
-              <dl>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Name</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {user?.name || 'Not provided'}
-                  </dd>
-                </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Email address</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {user?.email}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        </div>
+          <TabsContent value="overview" className="mt-6">
+            <DashboardOverview />
+          </TabsContent>
+          
+          <TabsContent value="profile" className="mt-6">
+            <ProfileSettings />
+          </TabsContent>
+          
+          <TabsContent value="security" className="mt-6">
+            <SecuritySettings />
+          </TabsContent>
+          
+          <TabsContent value="preferences" className="mt-6">
+            <PreferenceSettings />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
